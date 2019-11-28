@@ -21,9 +21,6 @@
 
 #include "internal.h"
 
-#define CREATE_TRACE_POINTS
-#include "trace.h"
-
 static DEFINE_IDR(icc_idr);
 static LIST_HEAD(icc_providers);
 static DEFINE_RT_MUTEX(icc_lock);
