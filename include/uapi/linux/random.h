@@ -49,10 +49,14 @@ struct rand_pool_info {
  *
  * GRND_NONBLOCK	Don't block and return EAGAIN instead
 <<<<<<< HEAD
+<<<<<<< HEAD
  * GRND_RANDOM		No effect
 =======
  * GRND_RANDOM		Use the /dev/random pool instead of /dev/urandom
 >>>>>>> 7f9f864af021 (random: add GRND_INSECURE to return best-effort non-cryptographic bytes)
+=======
+ * GRND_RANDOM		No effect
+>>>>>>> c4edc1055c11 (random: ignore GRND_RANDOM in getentropy(2))
  * GRND_INSECURE	Return non-cryptographic random bytes
  */
 #define GRND_NONBLOCK	0x0001
