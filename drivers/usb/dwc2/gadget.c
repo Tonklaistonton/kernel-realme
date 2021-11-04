@@ -1170,14 +1170,21 @@ static void dwc2_hsotg_start_req(struct dwc2_hsotg *hsotg,
 		}
 	}
 
-	if (hs_ep->isochronous && hs_ep->interval == 1) {
-		hs_ep->target_frame = dwc2_hsotg_read_frameno(hsotg);
-		dwc2_gadget_incr_frame_num(hs_ep);
-
-		if (hs_ep->target_frame & 0x1)
-			ctrl |= DXEPCTL_SETODDFR;
-		else
-			ctrl |= DXEPCTL_SETEVENFR;
+	if (hs_ep->isochronous) {
+		if (!dwc2_gadget_target_frame_elapsed(hs_ep)) {
+			if (hs_ep->interval == 1) {
+				if (hs_ep->target_frame & 0x1)
+					ctrl |= DXEPCTL_SETODDFR;
+				else
+					ctrl |= DXEPCTL_SETEVENFR;
+			}
+			ctrl |= DXEPCTL_CNAK;
+		} else {
+			hs_req->req.frame_number = hs_ep->target_frame;
+			hs_req->req.actual = 0;
+			dwc2_hsotg_complete_request(hsotg, hs_ep, hs_req, -ENODATA);
+			return;
+		}
 	}
 
 	ctrl |= DXEPCTL_EPENA;	/* ensure ep enabled */
@@ -2854,9 +2861,12 @@ static void dwc2_gadget_handle_ep_disabled(struct dwc2_hsotg_ep *hs_ep)
 
 	do {
 		hs_req = get_ep_head(hs_ep);
-		if (hs_req)
+		if (hs_req) {
+			hs_req->req.frame_number = hs_ep->target_frame;
+			hs_req->req.actual = 0;
 			dwc2_hsotg_complete_request(hsotg, hs_ep, hs_req,
 						    -ENODATA);
+		}
 		dwc2_gadget_incr_frame_num(hs_ep);
 		/* Update current frame number value. */
 		hsotg->frame_number = dwc2_hsotg_read_frameno(hsotg);
@@ -2899,6 +2909,25 @@ static void dwc2_gadget_handle_out_token_ep_disabled(struct dwc2_hsotg_ep *ep)
 		u32 ctrl;
 
 		ep->target_frame = hsotg->frame_number;
+		if (ep->interval > 1) {
+			ctrl = dwc2_readl(hsotg, DOEPCTL(ep->index));
+			if (ep->target_frame & 0x1)
+				ctrl |= DXEPCTL_SETODDFR;
+			else
+				ctrl |= DXEPCTL_SETEVENFR;
+
+			dwc2_writel(hsotg, ctrl, DOEPCTL(ep->index));
+		}
+	}
+
+	while (dwc2_gadget_target_frame_elapsed(ep)) {
+		hs_req = get_ep_head(ep);
+		if (hs_req) {
+			hs_req->req.frame_number = ep->target_frame;
+			hs_req->req.actual = 0;
+			dwc2_hsotg_complete_request(hsotg, ep, hs_req, -ENODATA);
+		}
+
 		dwc2_gadget_incr_frame_num(ep);
 
 		ctrl = dwc2_readl(hsotg, DOEPCTL(ep->index));
@@ -2980,7 +3009,23 @@ static void dwc2_gadget_handle_nak(struct dwc2_hsotg_ep *hs_ep)
 					    get_ep_head(hs_ep), 0);
 	}
 
-	if (!using_desc_dma(hsotg))
+	if (using_desc_dma(hsotg))
+		return;
+
+	ctrl = dwc2_readl(hsotg, DIEPCTL(hs_ep->index));
+	if (ctrl & DXEPCTL_EPENA)
+		dwc2_hsotg_ep_stop_xfr(hsotg, hs_ep);
+	else
+		dwc2_hsotg_txfifo_flush(hsotg, hs_ep->fifo_index);
+
+	while (dwc2_gadget_target_frame_elapsed(hs_ep)) {
+		hs_req = get_ep_head(hs_ep);
+		if (hs_req) {
+			hs_req->req.frame_number = hs_ep->target_frame;
+			hs_req->req.actual = 0;
+			dwc2_hsotg_complete_request(hsotg, hs_ep, hs_req, -ENODATA);
+		}
+
 		dwc2_gadget_incr_frame_num(hs_ep);
 }
 
