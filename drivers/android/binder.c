@@ -214,8 +214,6 @@ enum binder_deferred_state {
 	BINDER_DEFERRED_RELEASE      = 0x02,
 };
 
-<<<<<<< HEAD
-=======
 /**
  * struct binder_proc - binder process bookkeeping
  * @proc_node:            element for binder_procs list
@@ -303,7 +301,6 @@ struct binder_proc {
 	struct dentry *binderfs_entry;
 };
 
->>>>>>> 28a1e470b000 (binder: use euid from cred instead of using task)
 enum {
 	BINDER_LOOPER_STATE_REGISTERED  = 0x01,
 	BINDER_LOOPER_STATE_ENTERED     = 0x02,
@@ -2905,8 +2902,14 @@ static void binder_transaction(struct binder_proc *proc,
 		hans_check_binder(tr, proc, target_proc, true);
 #endif /*OPLUS_FEATURE_HANS_FREEZE*/
 		e->to_node = target_node->debug_id;
+		if (WARN_ON(proc == target_proc)) {
+			return_error = BR_FAILED_REPLY;
+			return_error_param = -EINVAL;
+			return_error_line = __LINE__;
+			goto err_invalid_target_handle;
+		}
 		if (security_binder_transaction(proc->cred,
-					target_proc->cred) < 0) {
+						target_proc->cred) < 0) {
 			return_error = BR_FAILED_REPLY;
 			return_error_param = -EPERM;
 			return_error_line = __LINE__;
