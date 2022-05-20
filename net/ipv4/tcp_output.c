@@ -2937,10 +2937,7 @@ int __tcp_retransmit_skb(struct sock *sk, struct sk_buff *skb, int segs)
 	struct tcp_sock *tp = tcp_sk(sk);
 	unsigned int cur_mss;
 	int diff, len, err;
-<<<<<<< HEAD
-=======
 	int avail_wnd;
->>>>>>> fd35e34ece33 (tcp: make retransmitted SKB fit into the send window)
 
 	/* Inconclusive MTU probe */
 	if (icsk->icsk_mtup.probe_size)
