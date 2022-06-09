@@ -1895,51 +1895,17 @@ static struct ctl_table vm_table[] = {
 		.extra1		= SYSCTL_ZERO,
 		.extra2		= &one_hundred,
 	},
-#ifdef CONFIG_DYNAMIC_TUNNING_SWAPPINESS
+#ifdef CONFIG_NUMA
 	{
-		.procname	= "vm_swappiness_threshold1",
-		.data		= &vm_swappiness_threshold1,
-		.maxlen		= sizeof(vm_swappiness_threshold1),
+		.procname	= "numa_stat",
+		.data		= &sysctl_vm_numa_stat,
+		.maxlen		= sizeof(int),
 		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
+		.proc_handler	= sysctl_vm_numa_stat_handler,
 		.extra1		= SYSCTL_ZERO,
-		.extra2		= &two_hundred,
-	},
-	{
-		.procname	= "vm_swappiness_threshold2",
-		.data		= &vm_swappiness_threshold2,
-		.maxlen		= sizeof(vm_swappiness_threshold2),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
-		.extra1		= SYSCTL_ZERO,
-		.extra2		= &two_hundred,
-	},
-	{
-		.procname	= "swappiness_threshold1_size",
-		.data		= &swappiness_threshold1_size,
-		.maxlen		= sizeof(swappiness_threshold1_size),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
-		.extra1		= SYSCTL_ZERO,
-	},
-	{
-		.procname	= "swappiness_threshold2_size",
-		.data		= &swappiness_threshold2_size,
-		.maxlen		= sizeof(swappiness_threshold2_size),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
-		.extra1		= SYSCTL_ZERO,
+		.extra2		= SYSCTL_ONE,
 	},
 #endif
-	{
-		.procname       = "want_old_faultaround_pte",
-		.data           = &want_old_faultaround_pte,
-		.maxlen         = sizeof(want_old_faultaround_pte),
-		.mode           = 0644,
-		.proc_handler   = proc_dointvec_minmax,
-		.extra1         = SYSCTL_ZERO,
-		.extra2         = SYSCTL_ONE,
-	},
 #ifdef CONFIG_HUGETLB_PAGE
 	{
 		.procname	= "nr_hugepages",
@@ -1955,15 +1921,6 @@ static struct ctl_table vm_table[] = {
 		.maxlen         = sizeof(unsigned long),
 		.mode           = 0644,
 		.proc_handler   = &hugetlb_mempolicy_sysctl_handler,
-	},
-	{
-		.procname		= "numa_stat",
-		.data			= &sysctl_vm_numa_stat,
-		.maxlen			= sizeof(int),
-		.mode			= 0644,
-		.proc_handler	= sysctl_vm_numa_stat_handler,
-		.extra1			= SYSCTL_ZERO,
-		.extra2			= SYSCTL_ONE,
 	},
 #endif
 	 {
