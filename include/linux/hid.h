@@ -624,8 +624,7 @@ struct hid_device {							/* device report descriptor */
 	spinlock_t  debug_list_lock;
 	wait_queue_head_t debug_wait;
 
-	ANDROID_KABI_RESERVE(1);
-	ANDROID_KABI_RESERVE(2);
+	unsigned int id;						/* system unique id */
 };
 
 #define to_hid_device(pdev) \
