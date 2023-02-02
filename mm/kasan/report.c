@@ -97,6 +97,7 @@ static void end_report(unsigned long *flags)
 	BUG();
 #else
 	if (panic_on_warn)
+	if (panic_on_warn && !test_bit(KASAN_BIT_MULTI_SHOT, &kasan_flags))
 		panic("panic_on_warn set ...\n");
 #endif
 	kasan_enable_current();
