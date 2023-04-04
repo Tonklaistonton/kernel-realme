@@ -1801,19 +1801,11 @@ err4:
 err3:
 	dwc3_free_scratch_buffers(dwc);
 err2:
-<<<<<<< HEAD
-	dwc3_free_event_buffers(dwc);
-err1:
-	pm_runtime_allow(&pdev->dev);
-	pm_runtime_disable(&pdev->dev);
-
-=======
 	pm_runtime_allow(dev);
 	pm_runtime_disable(dev);
 	pm_runtime_set_suspended(dev);
 	pm_runtime_put_noidle(dev);
 disable_clks:
->>>>>>> 2d5844aa6e56 (USB: dwc3: fix runtime pm imbalance on probe errors)
 	clk_bulk_disable_unprepare(dwc->num_clks, dwc->clks);
 assert_reset:
 	reset_control_assert(dwc->reset);
@@ -1827,7 +1819,11 @@ static int dwc3_remove(struct platform_device *pdev)
 	struct dwc3	*dwc = platform_get_drvdata(pdev);
 
 	dwc3_debugfs_exit(dwc);
-	dwc3_gadget_exit(dwc);
+
+	dwc3_core_exit(dwc);
+	dwc3_ulpi_exit(dwc);
+
+	pm_runtime_allow(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
 	pm_runtime_put_noidle(&pdev->dev);
 	pm_runtime_set_suspended(&pdev->dev);
