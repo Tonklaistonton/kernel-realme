@@ -420,9 +420,8 @@ static struct binder_buffer *binder_alloc_new_buf_locked(
 		return ERR_PTR(-EINVAL);
 	}
 
-#if defined(OPLUS_FEATURE_HANS_FREEZE) && defined(CONFIG_OPLUS_FEATURE_HANS)
-	hans_check_async_binder_buffer(is_async, alloc->free_async_space, size, sizeof(struct binder_buffer), alloc->buffer_size, alloc->pid);
-#endif /*OPLUS_FEATURE_HANS_FREEZE*/
+	/* Pad 0-size buffers so they get assigned unique addresses */
+	size = max(size, sizeof(void *));
 
 	if (is_async &&
 	    alloc->free_async_space < size + sizeof(struct binder_buffer)) {
@@ -431,9 +430,6 @@ static struct binder_buffer *binder_alloc_new_buf_locked(
 			      alloc->pid, size);
 		return ERR_PTR(-ENOSPC);
 	}
-
-	/* Pad 0-size buffers so they get assigned unique addresses */
-	size = max(size, sizeof(void *));
 
 	while (n) {
 		buffer = rb_entry(n, struct binder_buffer, rb_node);
