@@ -228,35 +228,6 @@ static void __loop_update_dio(struct loop_device *lo, bool dio)
 		blk_mq_unfreeze_queue(lo->lo_queue);
 }
 
-<<<<<<< HEAD
-/**
- * loop_validate_block_size() - validates the passed in block size
- * @bsize: size to validate
- */
-static int
-loop_validate_block_size(unsigned short bsize)
-{
-	if (bsize < 512 || bsize > PAGE_SIZE || !is_power_of_2(bsize))
-		return -EINVAL;
-
-	return 0;
-}
-
-/**
- * loop_set_size() - sets device size and notifies userspace
- * @lo: struct loop_device to set the size for
- * @size: new size of the loop device
- *
- * Callers must validate that the size passed into this function fits into
- * a sector_t, eg using loop_validate_size()
- */
-static void loop_set_size(struct loop_device *lo, loff_t size)
-{
-	struct block_device *bdev = lo->lo_device;
-
-	set_capacity(lo->lo_disk, size);
-	bd_set_size(bdev, size << SECTOR_SHIFT);
-=======
 static void
 figure_loop_size(struct loop_device *lo, loff_t offset, loff_t sizelimit)
 {
@@ -269,7 +240,6 @@ figure_loop_size(struct loop_device *lo, loff_t offset, loff_t sizelimit)
 		lo->lo_sizelimit = sizelimit;
 	set_capacity(lo->lo_disk, size);
 	bd_set_size(bdev, (loff_t)get_capacity(bdev->bd_disk) << 9);
->>>>>>> e08b2e4176f7 (loop: Remove sector_t truncation checks)
 	/* let user-space know about the new size */
 	kobject_uevent(&disk_to_dev(bdev->bd_disk)->kobj, KOBJ_CHANGE);
 }
@@ -979,8 +949,6 @@ static void loop_update_rotational(struct loop_device *lo)
 		blk_queue_flag_clear(QUEUE_FLAG_NONROT, q);
 }
 
-<<<<<<< HEAD
-=======
 static int loop_set_fd(struct loop_device *lo, fmode_t mode,
 		       struct block_device *bdev, unsigned int arg)
 {
@@ -1105,7 +1073,6 @@ out:
 	return error;
 }
 
->>>>>>> e08b2e4176f7 (loop: Remove sector_t truncation checks)
 static int
 loop_release_xfer(struct loop_device *lo)
 {
@@ -1541,12 +1508,6 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 	/* For flags that can't be cleared, use previous values too */
 	lo->lo_flags |= prev_lo_flags & ~LOOP_SET_STATUS_CLEARABLE_FLAGS;
 
-<<<<<<< HEAD
-	if (size_changed) {
-		loff_t new_size = get_size(lo->lo_offset, lo->lo_sizelimit,
-					   lo->lo_backing_file);
-		loop_set_size(lo, new_size);
-=======
 		if (type >= MAX_LO_CRYPT) {
 			err = -EINVAL;
 			goto out_unfreeze;
@@ -1574,7 +1535,6 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 			goto out_unfreeze;
 		}
 		figure_loop_size(lo, info->lo_offset, info->lo_sizelimit);
->>>>>>> e08b2e4176f7 (loop: Remove sector_t truncation checks)
 	}
 
 	memcpy(lo->lo_file_name, info->lo_file_name, LO_NAME_SIZE);
@@ -1778,12 +1738,7 @@ static int loop_set_capacity(struct loop_device *lo)
 	if (unlikely(lo->lo_state != Lo_bound))
 		return -ENXIO;
 
-<<<<<<< HEAD
-	size = get_loop_size(lo, lo->lo_backing_file);
-	loop_set_size(lo, size);
-=======
 	figure_loop_size(lo, lo->lo_offset, lo->lo_sizelimit);
->>>>>>> e08b2e4176f7 (loop: Remove sector_t truncation checks)
 
 	return 0;
 }
